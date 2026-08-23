@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wrist Aura</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpeg" />
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        /* ─────────── GLOBAL RESET & THEME ─────────── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0a08;
+            color: #f5f0eb;
+            scroll-behavior: smooth;
+        }
+
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+
+        :root {
+            --gold-500: #d4a847;
+            --gold-400: #d9b45e;
+            --gold-600: #c9993a;
+            --dark-bg: #0b0a08;
+            --card-bg: #161410;
+            --border-gold: rgba(212, 168, 71, 0.25);
+            --shadow-gold: 0 8px 32px rgba(212, 168, 71, 0.12);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #161410;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-500);
+            border-radius: 12px;
+        }
+
+        .bg-gold {
+            background: var(--gold-500);
+        }
+
+        .text-gold {
+            color: var(--gold-500);
+        }
+
+        .border-gold {
+            border-color: var(--border-gold);
+        }
+
+        .shadow-gold {
+            box-shadow: var(--shadow-gold);
+        }
+
+        .bg-card {
+            background: var(--card-bg);
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #d4a847, #f5d061, #d4a847);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ─── NAV ─── */
+        .nav-glow {
+            border-bottom: 1px solid rgba(212, 168, 71, 0.15);
+            background: rgba(11, 10, 8, 0.92);
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-link {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .nav-link.active {
+            color: var(--gold-500);
+            border-bottom-color: var(--gold-500);
+        }
+
+        /* ─── SEARCH BAR ─── */
+        .search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-wrap .search-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 8px 18px 8px 40px;
+            color: #f5f0eb;
+            font-size: 0.8rem;
+            width: 180px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-wrap .search-input:focus {
+            border-color: rgba(212, 168, 71, 0.3);
+            width: 240px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .search-wrap .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .search-wrap .search-icon {
+            position: absolute;
+            left: 14px;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .search-wrap .search-clear {
+            position: absolute;
+            right: 12px;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: none;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .search-wrap .search-clear.visible {
+            display: block;
+        }
+
+        .search-wrap .search-clear:hover {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .search-wrap .search-input {
+                width: 120px;
+                padding: 6px 14px 6px 34px;
+                font-size: 0.7rem;
+            }
+
+            .search-wrap .search-input:focus {
+                width: 160px;
+            }
+
+            .search-wrap .search-icon {
+                left: 10px;
+                font-size: 0.7rem;
+            }
+
+            .nav-link {
+                font-size: 0.6rem;
+                padding: 4px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-wrap .search-input {
+                width: 100px;
+                padding: 5px 10px 5px 28px;
+                font-size: 0.65rem;
+            }
+
+            .search-wrap .search-input:focus {
+                width: 130px;
+            }
+
+            .search-wrap .search-icon {
+                left: 8px;
+                font-size: 0.6rem;
+            }
+        }
+
+        /* ─── ADMIN LOCK ─── */
+        .admin-lock-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 0.9rem;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .admin-lock-btn:hover {
+            background: rgba(212, 168, 71, 0.08);
+            border-color: rgba(212, 168, 71, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .admin-lock-btn.active {
+            background: rgba(212, 168, 71, 0.12);
+            border-color: var(--gold-500);
+            color: var(--gold-500);
+            box-shadow: 0 0 30px rgba(212, 168, 71, 0.10);
+        }
+
+        .admin-lock-btn .lock-tooltip {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: -8px;
+            background: #1e1b17;
+            border: 1px solid rgba(212, 168, 71, 0.12);
+            border-radius: 10px;
+            padding: 4px 12px;
+            font-size: 0.55rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: all 0.25s ease;
+        }
+
+        .admin-lock-btn:hover .lock-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .admin-lock-btn.active .lock-tooltip {
+            color: var(--gold-400);
+            border-color: rgba(212, 168, 71, 0.2);
+        }
+
+        /* ─── PRODUCT CARDS ─── */
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(212, 168, 71, 0.10);
+            border-radius: 20px;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .product-card.admin-mode {
+            cursor: default;
+        }
+
+        .product-card:hover:not(.admin-mode) {
+            border-color: rgba(212, 168, 71, 0.35);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 48px rgba(212, 168, 71, 0.08);
+        }
+
+        .product-card.admin-mode:hover {
+            border-color: rgba(212, 168, 71, 0.20);
+        }
+
+        .product-card .img-wrap {
+            height: 240px;
+            background: #12100e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-card .img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .product-card:hover:not(.admin-mode) .img-wrap img {
+            transform: scale(1.04);
+        }
+
+        .product-card .badge-gold {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(212, 168, 71, 0.15);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(212, 168, 71, 0.25);
+            padding: 3px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--gold-400);
+            pointer-events: none;
+        }
+
+        .product-card .badge-flag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 3px 12px;
+            border-radius: 40px;
+            font-size: 0.55rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+        }
+
+        .badge-new {
+            background: rgba(37, 211, 102, 0.15);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            color: #4ade80;
+        }
+
+        .badge-best {
+            background: rgba(212, 168, 71, 0.15);
+            border: 1px solid rgba(212, 168, 71, 0.2);
+            color: var(--gold-400);
+        }
+
+        .product-card .wa-hint {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(11, 10, 8, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(37, 211, 102, 0.15);
+            border-radius: 40px;
+            padding: 3px 14px;
+            font-size: 0.55rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.04em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .product-card:hover:not(.admin-mode) .wa-hint {
+            opacity: 1;
+        }
+
+        .product-card .card-content {
+            padding: 14px 18px 16px;
+        }
+
+        .product-card.admin-mode .card-content {
+            cursor: default;
+        }
+
+        .admin-actions {
+            display: none;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(212, 168, 71, 0.08);
+        }
+
+        .admin-mode .admin-actions {
+            display: flex;
+        }
+
+        .admin-actions .btn-ghost-gold,
+        .admin-actions .btn-danger-ghost {
+            font-size: 0.65rem;
+            padding: 3px 12px;
+        }
+
+        .admin-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(212, 168, 71, 0.12);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(212, 168, 71, 0.15);
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.5rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--gold-400);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .admin-mode .admin-badge {
+            opacity: 1;
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn-gold {
+            background: linear-gradient(135deg, #d4a847, #c9993a);
+            color: #0b0a08;
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 60px;
+            border: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            font-size: 0.8rem;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-gold:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 28px rgba(212, 168, 71, 0.30);
+        }
+
+        .btn-gold-outline {
+            background: transparent;
+            color: var(--gold-500);
+            border: 1.5px solid var(--gold-500);
+            font-weight: 600;
+            padding: 6px 18px;
+            border-radius: 60px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-gold-outline:hover {
+            background: var(--gold-500);
+            color: #0b0a08;
+        }
+
+        .btn-ghost-gold {
+            background: rgba(212, 168, 71, 0.08);
+            color: var(--gold-400);
+            border: 1px solid rgba(212, 168, 71, 0.15);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-ghost-gold:hover {
+            background: rgba(212, 168, 71, 0.18);
+        }
+
+        .btn-danger-ghost {
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-danger-ghost:hover {
+            background: rgba(239, 68, 68, 0.18);
+        }
+
+        /* ─── INPUTS ─── */
+        .input-gold {
+            background: #12100e;
+            border: 1.5px solid rgba(212, 168, 71, 0.15);
+            border-radius: 14px;
+            padding: 10px 16px;
+            color: #f5f0eb;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.25s;
+            outline: none;
+        }
+
+        .input-gold:focus {
+            border-color: var(--gold-500);
+            box-shadow: 0 0 0 4px rgba(212, 168, 71, 0.08);
+        }
+
+        .input-gold::placeholder {
+            color: rgba(245, 240, 235, 0.30);
+        }
+
+        label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: rgba(245, 240, 235, 0.5);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* ─── MODAL ─── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-box {
+            background: #161410;
+            border: 1px solid rgba(212, 168, 71, 0.15);
+            border-radius: 28px;
+            max-width: 520px;
+            width: 100%;
+            padding: 32px 28px 28px;
+            transform: scale(0.96) translateY(12px);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.open .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .password-modal .modal-box {
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .password-modal .lock-icon {
+            font-size: 2.8rem;
+            color: var(--gold-400);
+            margin-bottom: 6px;
+            opacity: 0.6;
+        }
+
+        .password-modal .sub-text {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
+        }
+
+        .password-input-wrap {
+            position: relative;
+            margin-top: 18px;
+        }
+
+        .password-input-wrap .input-gold {
+            padding-right: 46px;
+        }
+
+        .password-input-wrap .toggle-pass {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .password-input-wrap .toggle-pass:hover {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .pass-error {
+            color: #ef4444;
+            font-size: 0.7rem;
+            margin-top: 6px;
+            min-height: 18px;
+        }
+
+        /* ─── PAGES ─── */
+        .page-section {
+            display: none;
+            animation: fadeSlideUp 0.4s ease forwards;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* ─── HERO ─── */
+        .hero-section {
+            background: #12100e;
+            border-radius: 28px;
+            padding: 40px 32px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(212, 168, 71, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+        }
+
+        .hero-background.visible {
+            opacity: 1;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(11, 10, 8, 0.94) 0%, rgba(11, 10, 8, 0.72) 48%, rgba(11, 10, 8, 0.36) 100%);
+            pointer-events: none;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 168, 71, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-section .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section .hero-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .hero-section .hero-sub {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.95rem;
+            max-width: 480px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .hero-section {
+                padding: 28px 20px;
+            }
+
+            .hero-section .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-section .hero-sub {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ─── EMPTY STATE ─── */
+        .empty-state {
+            border: 2px dashed rgba(212, 168, 71, 0.12);
+            border-radius: 32px;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1e1b17;
+            border: 1px solid rgba(212, 168, 71, 0.2);
+            border-radius: 16px;
+            padding: 12px 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .toast .toast-icon {
+            color: var(--gold-500);
+            margin-right: 10px;
+        }
+
+        /* ─── FOOTER ─── */
+        .site-footer {
+            border-top: 1px solid rgba(212, 168, 71, 0.15);
+            background: #0f0e0c;
+            padding: 42px max(24px, calc((100vw - 1152px) / 2)) 24px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1.2fr;
+            gap: 32px;
+            padding-bottom: 32px;
+        }
+
+        .footer-brand {
+            max-width: 280px;
+        }
+
+        .footer-brand img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(212, 168, 71, 0.35);
+        }
+
+        .footer-heading {
+            color: var(--gold-400);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .footer-copy,
+        .footer-link,
+        .footer-contact {
+            color: rgba(245, 240, 235, 0.42);
+            font-size: 0.78rem;
+            line-height: 1.7;
+        }
+
+        .footer-links {
+            display: grid;
+            gap: 7px;
+        }
+
+        .footer-link {
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover,
+        .footer-contact:hover {
+            color: var(--gold-400);
+        }
+
+        .footer-contact {
+            display: block;
+            text-decoration: none;
+            margin-bottom: 7px;
+        }
+
+        .footer-contact i {
+            color: var(--gold-500);
+            width: 18px;
+            margin-right: 4px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(245, 240, 235, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding-top: 18px;
+            font-size: 0.68rem;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 14px;
+        }
+
+        .footer-socials a {
+            color: rgba(245, 240, 235, 0.4);
+            font-size: 0.95rem;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .footer-socials a:hover {
+            color: var(--gold-400);
+            transform: translateY(-2px);
+        }
+
+        .shop-categories {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 20px 0 24px;
+        }
+
+        .shop-category {
+            border: 1px solid rgba(212, 168, 71, 0.18);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(245, 240, 235, 0.48);
+            cursor: pointer;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            padding: 9px 16px;
+            transition: all 0.2s ease;
+        }
+
+        .shop-category:hover,
+        .shop-category.active {
+            background: rgba(212, 168, 71, 0.14);
+            border-color: rgba(212, 168, 71, 0.6);
+            color: var(--gold-400);
+        }
+
+        /* ─── WHATSAPP ─── */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 998;
+        }
+
+        .whatsapp-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: white;
+            font-size: 1.8rem;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .whatsapp-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 48px rgba(37, 211, 102, 0.50);
+        }
+
+        .whatsapp-btn:active {
+            transform: scale(0.94);
+        }
+
+        .whatsapp-btn::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(212, 168, 71, 0.3), rgba(212, 168, 71, 0.05));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .whatsapp-btn .pulse-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(37, 211, 102, 0.2);
+            animation: pulseRing 2.5s ease-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulseRing {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.25);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .whatsapp-btn {
+                width: 52px;
+                height: 52px;
+                font-size: 1.4rem;
+            }
+
+            .whatsapp-float {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .product-card .img-wrap {
+                height: 180px;
+            }
+
+            .product-card .card-content {
+                padding: 10px 12px 12px;
+            }
+
+            .product-card .wa-hint {
+                display: none;
+            }
+        }
+
+        /* ─── PAGE HEADER ─── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .page-header .page-count {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .page-header .page-count span {
+            color: var(--gold-400);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeSlideUp 0.4s ease forwards;
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+        import {
+            addDoc,
+            collection,
+            deleteDoc,
+            doc,
+            getFirestore,
+            serverTimestamp,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyABIPHQS5MbLjKkQD2u0eVmJu1UYdrA9mM",
+            authDomain: "wrist-aura.firebaseapp.com",
+            projectId: "wrist-aura",
+            storageBucket: "wrist-aura.firebasestorage.app",
+            messagingSenderId: "983135309664",
+            appId: "1:983135309664:web:12c835e8b7f590198d5805",
+            measurementId: "G-2SFLGV60PH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        getAnalytics(app);
+        const db = getFirestore(app);
+
+        window.firebaseReady = Promise.resolve({
+            db,
+            addDoc,
+            collection,
+            deleteDoc,
+            doc,
+            serverTimestamp,
+            updateDoc
+        });
+    </script>
+</head>
+
+<body>
+
+    <!-- ─── TOAST ─── -->
+    <div id="toast" class="toast flex items-center">
+        <span class="toast-icon"><i class="fas fa-circle-check"></i></span>
+        <span id="toastMessage" class="text-sm font-medium">Done!</span>
+    </div>
+
+    <!-- ─── NAVIGATION ─── -->
+    <nav
+        class="nav-glow fixed top-0 left-0 w-full z-50 px-3 md:px-6 py-2.5 flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-3">
+            <img src="./logo.jpeg" alt="Wrist Aura" class="w-10 h-10 rounded-full object-cover border border-gold/20" />
+            <span class="text-xl md:text-2xl font-display gold-gradient-text font-bold tracking-tight">WRIST</span>
+            <span
+                class="text-[0.5rem] font-light tracking-[0.3em] text-gold-400/60 uppercase hidden sm:inline">AURA</span>
+        </div>
+
+        <!-- Page Nav Links -->
+        <div class="flex items-center gap-3 md:gap-5 flex-wrap">
+            <span class="nav-link active" data-page="home">Home</span>
+            <span class="nav-link" data-page="shop">Shop</span>
+            <span class="nav-link" data-page="best">Best</span>
+            <span class="nav-link" data-page="new">New Arrivals</span>
+        </div>
+
+        <!-- Search + Admin -->
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="search-wrap">
+                <span class="search-icon"><i class="fas fa-search"></i></span>
+                <input id="searchInput" class="search-input" type="text" placeholder="Search..." />
+                <button id="searchClear" class="search-clear"><i class="fas fa-xmark"></i></button>
+            </div>
+            <button id="adminLockBtn" class="admin-lock-btn" aria-label="Admin access">
+                <i class="fas fa-lock" id="lockIcon"></i>
+                <span class="lock-tooltip" id="lockTooltip">Admin</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <main class="pt-20 pb-16 px-3 md:px-6 max-w-7xl mx-auto">
+
+        <!-- ─── HOME PAGE ─── -->
+        <div id="page-home" class="page-section active">
+            <!-- Hero -->
+            <div class="hero-section">
+                <div class="hero-background" aria-hidden="true"></div>
+                <div class="hero-content">
+                    <div class="text-gold text-xs font-semibold uppercase tracking-[0.2em] mb-1">✦ Luxury & Trendy
+                        Handmade Jewelry</div>
+                    <h1 class="hero-title gold-gradient-text">Timeless <br class="sm:hidden" /><br> Elegance & Statement
+                        Jewelry</h1>
+                    <p class="hero-sub">Discover Wrist Aura's exclusive curated jewelry collection featuring handcrafted
+                        bracelets, necklaces, earrings,
+                        and rings designed to tell your unique story of luxury and grace..</p>
+                    <button onclick="window.navigateTo('shop')" class="btn-gold mt-4 text-sm">
+                        <i class="fas fa-bag-shopping mr-2"></i> Explore Shop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Featured: Best Selling & New Arrival mix -->
+            <div id="home-featured" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- rendered by JS -->
+            </div>
+        </div>
+
+        <!-- ─── SHOP PAGE ─── -->
+        <div id="page-shop" class="page-section">
+            <div class="page-header">
+                <h2 class="gold-gradient-text">All Accessories</h2>
+                <span class="page-count">Showing <span id="shopCount">0</span> pieces</span>
+            </div>
+            <div class="shop-categories" role="tablist" aria-label="Accessory categories">
+                <button class="shop-category active" type="button" data-category="all" role="tab"
+                    aria-selected="true">All</button>
+                <button class="shop-category" type="button" data-category="necklace" role="tab"
+                    aria-selected="false">Necklaces</button>
+                <button class="shop-category" type="button" data-category="bracelet" role="tab"
+                    aria-selected="false">Bracelets</button>
+                <button class="shop-category" type="button" data-category="ring" role="tab"
+                    aria-selected="false">Rings</button>
+                <button class="shop-category" type="button" data-category="earrings" role="tab"
+                    aria-selected="false">Earrings</button>
+            </div>
+            <div id="shop-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- rendered by JS -->
+            </div>
+        </div>
+
+        <!-- ─── BEST SELLING PAGE ─── -->
+        <div id="page-best" class="page-section">
+            <div class="page-header">
+                <h2 class="gold-gradient-text">⭐ Best Selling</h2>
+                <span class="page-count">Showing <span id="bestCount">0</span> pieces</span>
+            </div>
+            <div id="best-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- rendered by JS -->
+            </div>
+        </div>
+
+        <!-- ─── NEW ARRIVAL PAGE ─── -->
+        <div id="page-new" class="page-section">
+            <div class="page-header">
+                <h2 class="gold-gradient-text">✨ New Arrivals</h2>
+                <span class="page-count">Showing <span id="newCount">0</span> pieces</span>
+            </div>
+            <div id="new-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- rendered by JS -->
+            </div>
+        </div>
+
+        <!-- ─── ADMIN PANEL ─── -->
+        <div id="adminPanel" class="mt-12 hidden">
+            <div class="border-t border-gold/10 pt-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400/60">Admin Control</span>
+                    <span class="h-px flex-1 bg-gradient-to-r from-gold/20 to-transparent"></span>
+                    <button id="openAddBtn" class="btn-gold text-xs flex items-center gap-1.5">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                <div id="adminProductList" class="space-y-2.5">
+                    <!-- rendered by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="./logo.jpeg" alt="Wrist Aura logo" />
+                    <div>
+                        <div class="text-lg font-display gold-gradient-text font-bold">WRIST AURA</div>
+                        <div class="text-[0.55rem] tracking-[0.25em] text-gold-400/60 uppercase">Jewelry with character
+                        </div>
+                    </div>
+                </div>
+                <p class="footer-copy">Curated bracelets and timeless accessories, crafted to make every moment shine.
+                </p>
+            </div>
+
+            <div>
+                <div class="footer-heading">Explore</div>
+                <div class="footer-links">
+                    <a class="footer-link" onclick="window.navigateTo('home')">Home</a>
+                    <a class="footer-link" onclick="window.navigateTo('shop')">Shop</a>
+                    <a class="footer-link" onclick="window.navigateTo('best')">Best Selling</a>
+                    <a class="footer-link" onclick="window.navigateTo('new')">New Arrivals</a>
+                </div>
+            </div>
+
+            <div>
+                <div class="footer-heading">Get in touch</div>
+                <a class="footer-contact" href="https://wa.me/923264744529" target="_blank" rel="noopener noreferrer"><i
+                        class="fab fa-whatsapp"></i> WhatsApp us</a>
+                <a class="footer-contact" href="mailto:wristaura36@gmail.com"><i class="fas fa-envelope"></i>
+                    wristaura36@gmail.com</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span>&copy; 2026 Wrist Aura. All rights reserved.</span>
+            <div class="footer-socials" aria-label="Social media links">
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://wa.me/923264744529" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i
+                        class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ─── WHATSAPP ─── -->
+    <div class="whatsapp-float">
+        <a id="whatsappBtn" class="whatsapp-btn"
+            href="https://wa.me/923264744529?text=Hello%20Wrist%20Aura!%20I'm%20interested%20in%20your%20jewelry%20collection."
+            target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+            <span class="pulse-ring"></span>
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- ─── PRODUCT MODAL ─── -->
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="flex items-center justify-between mb-5">
+                <h2 id="modalTitle" class="text-xl font-display font-bold text-white">Add New Piece</h2>
+                <button id="closeModalBtn" class="text-white/30 hover:text-white/70 transition text-xl">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <form id="productForm" autocomplete="off">
+                <input type="hidden" id="editId" value="" />
+                <div class="space-y-3.5">
+                    <div>
+                        <label for="productName">Name</label>
+                        <input id="productName" type="text" class="input-gold"
+                            placeholder="e.g. Golden Serpent Bracelet" required />
+                    </div>
+                    <div>
+                        <label for="productPrice">Price ($)</label>
+                        <input id="productPrice" type="number" step="0.01" class="input-gold" placeholder="149.00"
+                            required />
+                    </div>
+                    <div>
+                        <label for="productCategory">Category</label>
+                        <input id="productCategory" type="text" class="input-gold"
+                            placeholder="Bracelet, Necklace, Ring …" />
+                    </div>
+                    <div>
+                        <label for="productImage">Image URL</label>
+                        <input id="productImage" type="url" class="input-gold"
+                            placeholder="https://images.unsplash.com/…" required />
+                    </div>
+                    <div>
+                        <label for="productDescription">Description</label>
+                        <textarea id="productDescription" rows="2" class="input-gold"
+                            placeholder="A brief description…"></textarea>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="flex items-center gap-2 cursor-pointer text-white/40 text-sm font-medium">
+                                <input type="checkbox" id="productNewArrival" class="accent-gold-500" />
+                                New Arrival
+                            </label>
+                        </div>
+                        <div class="flex-1">
+                            <label class="flex items-center gap-2 cursor-pointer text-white/40 text-sm font-medium">
+                                <input type="checkbox" id="productBestSelling" class="accent-gold-500" />
+                                Best Selling
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="submit" id="modalSubmitBtn" class="btn-gold flex-1 text-center">
+                            <i class="fas fa-save mr-1.5"></i> Save
+                        </button>
+                        <button type="button" id="modalCancelBtn" class="btn-gold-outline flex-1 text-center">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── PASSWORD MODAL ─── -->
+    <div id="passwordModal" class="modal-overlay password-modal">
+        <div class="modal-box">
+            <div class="lock-icon"><i class="fas fa-lock"></i></div>
+            <h2 class="text-xl font-display font-bold text-white">Admin Access</h2>
+            <p class="sub-text">Enter the admin password to manage products</p>
+            <div class="password-input-wrap">
+                <input id="passwordInput" type="password" class="input-gold" placeholder="Enter password…"
+                    autocomplete="off" />
+                <button id="togglePassVis" class="toggle-pass" type="button" aria-label="Toggle password visibility">
+                    <i class="fas fa-eye" id="passEyeIcon"></i>
+                </button>
+            </div>
+            <div id="passError" class="pass-error"></div>
+            <div class="flex gap-3 mt-4">
+                <button id="passSubmitBtn" class="btn-gold flex-1 text-center">
+                    <i class="fas fa-key mr-1.5"></i> Unlock
+                </button>
+                <button id="passCancelBtn" class="btn-gold-outline flex-1 text-center">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── JAVASCRIPT ─── -->
+    <script>
+        (function () {
+            'use strict';
+
+            // ─── CONFIG ───
+            const ADMIN_PASSWORD = 'wristaura@2026'; // Change this to your desired password
+            const STORAGE_KEY = 'wristaura_products';
+
+            // ─── STATE ───
+            let products = [];
+            let isAdmin = false;
+            let editingId = null;
+            let currentPage = 'home';
+            let searchQuery = '';
+            let selectedShopCategory = 'all';
+            let pendingAdminAction = null;
+            let pendingDeleteId = null;
+
+            // ─── DOM REFS ───
+            const pageSections = {
+                home: document.getElementById('page-home'),
+                shop: document.getElementById('page-shop'),
+                best: document.getElementById('page-best'),
+                new: document.getElementById('page-new')
+            };
+            const homeGrid = document.getElementById('home-featured');
+            const shopGrid = document.getElementById('shop-grid');
+            const bestGrid = document.getElementById('best-grid');
+            const newGrid = document.getElementById('new-grid');
+            const shopCount = document.getElementById('shopCount');
+            const bestCount = document.getElementById('bestCount');
+            const newCount = document.getElementById('newCount');
+            const shopCategories = document.querySelectorAll('.shop-category');
+            const adminPanel = document.getElementById('adminPanel');
+            const adminList = document.getElementById('adminProductList');
+            const adminLockBtn = document.getElementById('adminLockBtn');
+            const lockIcon = document.getElementById('lockIcon');
+            const lockTooltip = document.getElementById('lockTooltip');
+            const openAddBtn = document.getElementById('openAddBtn');
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+
+            const modal = document.getElementById('productModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('productForm');
+            const editIdInput = document.getElementById('editId');
+            const nameInput = document.getElementById('productName');
+            const priceInput = document.getElementById('productPrice');
+            const categoryInput = document.getElementById('productCategory');
+            const imageInput = document.getElementById('productImage');
+            const descInput = document.getElementById('productDescription');
+            const newArrivalCheck = document.getElementById('productNewArrival');
+            const bestSellingCheck = document.getElementById('productBestSelling');
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+
+            const passModal = document.getElementById('passwordModal');
+            const passInput = document.getElementById('passwordInput');
+            const passError = document.getElementById('passError');
+            const passSubmitBtn = document.getElementById('passSubmitBtn');
+            const passCancelBtn = document.getElementById('passCancelBtn');
+            const togglePassVis = document.getElementById('togglePassVis');
+            const passEyeIcon = document.getElementById('passEyeIcon');
+
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            let toastTimer = null;
+            let passVisible = false;
+
+            // ─── NAV LINKS ───
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            // ─── SAMPLE DATA ───
+            const defaultProducts = [{
+                id: '1',
+                name: 'Golden Serpent Bracelet',
+                price: 149.00,
+                category: 'Bracelet',
+                image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&h=600&fit=crop&crop=center&auto=format',
+                description: 'Intricate serpent design in 18k gold-plated brass, adjustable chain.',
+                isNewArrival: false,
+                isBestSelling: true
+            }, {
+                id: '2',
+                name: 'Onyx & Gold Pendant',
+                price: 89.50,
+                category: 'Necklace',
+                image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&h=600&fit=crop&crop=center&auto=format',
+                description: 'Natural onyx cabochon set in a brushed gold bezel, 45cm chain.',
+                isNewArrival: true,
+                isBestSelling: false
+            }, {
+                id: '3',
+                name: 'Eclipse Hoop Earrings',
+                price: 120.00,
+                category: 'Earrings',
+                image: 'https://images.unsplash.com/photo-1635767798638-3e25273a8231?w=600&h=600&fit=crop&crop=center&auto=format',
+                description: 'Sleek matte-gold hoops with a brushed finish, 35mm diameter.',
+                isNewArrival: false,
+                isBestSelling: true
+            }, {
+                id: '4',
+                name: 'Twilight Ring',
+                price: 210.00,
+                category: 'Ring',
+                image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&h=600&fit=crop&crop=center&auto=format',
+                description: 'Statement ring with a golden band and a dark sapphire center.',
+                isNewArrival: true,
+                isBestSelling: false
+            }, {
+                id: '5',
+                name: 'Celestial Drop Necklace',
+                price: 175.00,
+                category: 'Necklace',
+                image: 'https://images.unsplash.com/photo-1589128777073-2395661d8cc4?w=600&h=600&fit=crop&crop=center&auto=format',
+                description: 'Delicate chain with a celestial drop pendant, 18k gold finish.',
+                isNewArrival: true,
+                isBestSelling: false
+            }, {
+                id: '6',
+                name: 'Dune Stackable Ring',
+                price: 65.00,
+                category: 'Ring',
+                image: 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&h=600&fit=crop&crop=center&auto=format',
+                description: 'Minimalist gold ring with a textured dune finish, stackable.',
+                isNewArrival: false,
+                isBestSelling: true
+            }];
+
+            // ─── HELPERS ───
+            function generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            }
+
+            function loadData() {
+                const stored = localStorage.getItem('wrist_products');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            // Ensure flags exist
+                            products = parsed.map(p => ({
+                                ...p,
+                                isNewArrival: p.isNewArrival || false,
+                                isBestSelling: p.isBestSelling || false
+                            }));
+                            return;
+                        }
+                    } catch { /* fall through */ }
+                }
+                products = defaultProducts.map(p => ({ ...p }));
+                saveData();
+            }
+
+            function saveData() {
+                localStorage.setItem('wrist_products', JSON.stringify(products));
+            }
+
+            function showToast(msg, icon = 'fa-circle-check') {
+                toastMsg.textContent = msg;
+                toast.querySelector('.toast-icon i').className = `fas ${icon}`;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+            }
+
+            // ─── PAGE NAVIGATION ───
+            function navigateTo(page) {
+                currentPage = page;
+                // Update nav links
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.page === page);
+                });
+                // Show page
+                Object.keys(pageSections).forEach(key => {
+                    pageSections[key].classList.toggle('active', key === page);
+                });
+                // Re-render the active page
+                renderCurrentPage();
+                // Scroll to top of main
+                document.querySelector('main').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Expose for inline
+            window.navigateTo = navigateTo;
+
+            // ─── SEARCH ───
+            function applySearch(query) {
+                searchQuery = query.trim().toLowerCase();
+                searchInput.value = query;
+                searchClear.classList.toggle('visible', query.length > 0);
+                renderCurrentPage();
+            }
+
+            function clearSearch() {
+                applySearch('');
+                searchInput.focus();
+            }
+
+            // ─── RENDER ───
+            function renderAll() {
+                renderCurrentPage();
+                renderAdminList();
+                updateAdminUI();
+            }
+
+            function getFilteredProducts(page) {
+                let filtered = [...products];
+                // Apply search
+                if (searchQuery) {
+                    filtered = filtered.filter(p =>
+                        p.name.toLowerCase().includes(searchQuery) ||
+                        p.category.toLowerCase().includes(searchQuery) ||
+                        (p.description && p.description.toLowerCase().includes(searchQuery))
+                    );
+                }
+                // Page filter
+                if (page === 'best') {
+                    filtered = filtered.filter(p => p.isBestSelling);
+                } else if (page === 'new') {
+                    filtered = filtered.filter(p => p.isNewArrival);
+                } else if (page === 'shop' && selectedShopCategory !== 'all') {
+                    filtered = filtered.filter(p => {
+                        const category = (p.category || '').toLowerCase().trim();
+                        return category === selectedShopCategory || category === `${selectedShopCategory}s`;
+                    });
+                }
+                return filtered;
+            }
+
+            function renderCurrentPage() {
+                const page = currentPage;
+
+                // Home: show mix of best + new
+                if (page === 'home') {
+                    const featured = products.filter(p => p.isBestSelling || p.isNewArrival);
+                    const toShow = featured.length > 0 ? featured : products.slice(0, 4);
+                    homeGrid.innerHTML = renderProductCards(toShow, true);
+                    return;
+                }
+
+                // Shop, Best, New
+                const filtered = getFilteredProducts(page);
+                let grid, countEl;
+                if (page === 'shop') {
+                    grid = shopGrid;
+                    countEl = shopCount;
+                } else if (page === 'best') {
+                    grid = bestGrid;
+                    countEl = bestCount;
+                } else if (page === 'new') {
+                    grid = newGrid;
+                    countEl = newCount;
+                } else { return; }
+
+                if (countEl) countEl.textContent = filtered.length;
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = `
+                <div class="empty-state col-span-full">
+                  <div class="text-4xl mb-3 opacity-20">✦</div>
+                  <p class="text-white/30 font-light text-base">${searchQuery ? 'No results found for "' + searchQuery + '"' : 'No pieces here yet'}</p>
+                  ${!searchQuery ? '<p class="text-white/20 text-sm mt-1">Check back soon for new arrivals</p>' : ''}
+                </div>
+              `;
+                    return;
+                }
+
+                grid.innerHTML = renderProductCards(filtered, false);
+            }
+
+            function renderProductCards(productList, isHome) {
+                if (!productList || productList.length === 0) return '';
+
+                return productList.map(p => `
+              <div class="product-card ${isAdmin ? 'admin-mode' : ''} animate-in" 
+                   data-id="${p.id}"
+                   style="animation-delay: ${Math.random() * 0.1}s">
+                <div class="img-wrap">
+                  <img src="${p.image}" alt="${p.name}" loading="lazy" 
+                       onerror="this.src='https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&h=600&fit=crop&crop=center&auto=format'" />
+                  <span class="badge-gold">${p.category || 'Accessory'}</span>
+                  ${p.isBestSelling ? '<span class="badge-flag badge-best">⭐ Best</span>' : ''}
+                  ${p.isNewArrival ? '<span class="badge-flag badge-new">✦ New</span>' : ''}
+                  ${isAdmin ? '<span class="admin-badge"><i class="fas fa-lock-open"></i> Admin</span>' : ''}
+                  <span class="wa-hint"><i class="fab fa-whatsapp"></i> Tap to inquire</span>
+                </div>
+                <div class="card-content">
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-display text-base font-semibold text-white leading-tight">${p.name}</h3>
+                    <span class="text-gold font-bold text-sm whitespace-nowrap">$${p.price.toFixed(2)}</span>
+                  </div>
+                  <p class="text-white/30 text-xs mt-1 line-clamp-2">${p.description || 'A refined piece for any occasion.'}</p>
+                  <div class="admin-actions">
+                    <button class="btn-ghost-gold text-xs flex items-center gap-1 edit-btn" data-id="${p.id}">
+                      <i class="fas fa-pen"></i> Edit
+                    </button>
+                    <button class="btn-danger-ghost text-xs flex items-center gap-1 delete-btn" data-id="${p.id}">
+                      <i class="fas fa-trash-can"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `).join('');
+            }
+
+            // ─── ADMIN LIST ───
+            function renderAdminList() {
+                if (!isAdmin) {
+                    adminList.innerHTML = '';
+                    adminPanel.classList.add('hidden');
+                    return;
+                }
+                adminPanel.classList.remove('hidden');
+
+                if (products.length === 0) {
+                    adminList.innerHTML = `
+                <div class="text-white/30 text-sm py-3 italic">No products to manage.</div>
+              `;
+                    return;
+                }
+
+                adminList.innerHTML = products.map(p => `
+              <div class="flex flex-wrap items-center gap-3 p-2.5 rounded-xl bg-card border border-gold/10 hover:border-gold/20 transition">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[#12100e]">
+                  <img src="${p.image}" alt="" class="w-full h-full object-cover" 
+                       onerror="this.src='https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=80&h=80&fit=crop&crop=center&auto=format'" />
+                </div>
+                <div class="flex-1 min-w-[100px]">
+                  <p class="text-sm font-medium text-white">${p.name}</p>
+                  <p class="text-xs text-white/30">$${p.price.toFixed(2)} · ${p.category || 'Uncategorized'}</p>
+                  <p class="text-[0.5rem] text-white/20 flex gap-3 mt-0.5">
+                    ${p.isNewArrival ? '<span class="text-green-400">✦ New</span>' : ''}
+                    ${p.isBestSelling ? '<span class="text-gold-400">⭐ Best</span>' : ''}
+                  </p>
+                </div>
+                <div class="flex gap-1.5 flex-wrap">
+                  <button class="btn-ghost-gold text-[0.6rem] flex items-center gap-1 edit-admin-btn" data-id="${p.id}">
+                    <i class="fas fa-pen"></i> Edit
+                  </button>
+                  <button class="btn-danger-ghost text-[0.6rem] flex items-center gap-1 delete-admin-btn" data-id="${p.id}">
+                    <i class="fas fa-trash-can"></i> Delete
+                  </button>
+                </div>
+              </div>
+            `).join('');
+
+                document.querySelectorAll('.edit-admin-btn').forEach(btn => {
+                    btn.addEventListener('click', () => openEdit(btn.dataset.id));
+                });
+                document.querySelectorAll('.delete-admin-btn').forEach(btn => {
+                    btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
+                });
+            }
+
+            function updateAdminUI() {
+                if (isAdmin) {
+                    adminLockBtn.classList.add('active');
+                    lockIcon.className = 'fas fa-lock-open';
+                    lockTooltip.textContent = 'Logout';
+                } else {
+                    adminLockBtn.classList.remove('active');
+                    lockIcon.className = 'fas fa-lock';
+                    lockTooltip.textContent = 'Admin';
+                }
+                // Re-render cards to show/hide admin actions
+                renderCurrentPage();
+                renderAdminList();
+            }
+
+            // ─── PASSWORD MODAL ───
+            function openPasswordModal(message) {
+                passError.textContent = '';
+                passInput.value = '';
+                passInput.placeholder = message || 'Enter admin password…';
+                passModal.classList.add('open');
+                setTimeout(() => passInput.focus(), 150);
+            }
+
+            function closePasswordModal() {
+                passModal.classList.remove('open');
+                passInput.value = '';
+                passError.textContent = '';
+                pendingAdminAction = null;
+                pendingDeleteId = null;
+            }
+
+            function handlePasswordSubmit() {
+                const entered = passInput.value.trim();
+                if (entered === ADMIN_PASSWORD) {
+                    isAdmin = true;
+                    closePasswordModal();
+                    renderAll();
+                    showToast('🔓 Admin mode activated', 'fa-lock-open');
+                    if (pendingAdminAction === 'add') {
+                        pendingAdminAction = null;
+                        openAdd();
+                    } else if (pendingAdminAction === 'edit' && pendingDeleteId) {
+                        const id = pendingDeleteId;
+                        pendingAdminAction = null;
+                        pendingDeleteId = null;
+                        openEdit(id);
+                    } else if (pendingAdminAction === 'delete' && pendingDeleteId) {
+                        const id = pendingDeleteId;
+                        pendingAdminAction = null;
+                        pendingDeleteId = null;
+                        deleteProduct(id);
+                    } else {
+                        pendingAdminAction = null;
+                        pendingDeleteId = null;
+                    }
+                } else {
+                    passError.textContent = '❌ Incorrect password. Try again.';
+                    passInput.value = '';
+                    passInput.focus();
+                    passInput.style.borderColor = '#ef4444';
+                    setTimeout(() => { passInput.style.borderColor = ''; }, 500);
+                }
+            }
+
+            // ─── CRUD ───
+            function openAdd() {
+                if (!isAdmin) {
+                    pendingAdminAction = 'add';
+                    openPasswordModal('Enter admin password to add a product');
+                    return;
+                }
+                editingId = null;
+                modalTitle.textContent = 'Add New Piece';
+                submitBtn.innerHTML = '<i class="fas fa-save mr-1.5"></i> Save';
+                form.reset();
+                newArrivalCheck.checked = false;
+                bestSellingCheck.checked = false;
+                editIdInput.value = '';
+                modal.classList.add('open');
+            }
+
+            function openEdit(id) {
+                if (!isAdmin) {
+                    pendingAdminAction = 'edit';
+                    pendingDeleteId = id;
+                    openPasswordModal('Enter admin password to edit this product');
+                    return;
+                }
+                const p = products.find(x => x.id === id);
+                if (!p) return;
+                editingId = id;
+                modalTitle.textContent = 'Edit Piece';
+                submitBtn.innerHTML = '<i class="fas fa-pen mr-1.5"></i> Update';
+                editIdInput.value = id;
+                nameInput.value = p.name;
+                priceInput.value = p.price;
+                categoryInput.value = p.category || '';
+                imageInput.value = p.image;
+                descInput.value = p.description || '';
+                newArrivalCheck.checked = p.isNewArrival || false;
+                bestSellingCheck.checked = p.isBestSelling || false;
+                modal.classList.add('open');
+            }
+
+            function closeModal() {
+                modal.classList.remove('open');
+                editingId = null;
+                form.reset();
+                editIdInput.value = '';
+            }
+
+            async function saveProduct(e) {
+                e.preventDefault();
+                const name = nameInput.value.trim();
+                const price = parseFloat(priceInput.value);
+                const category = categoryInput.value.trim();
+                const image = imageInput.value.trim();
+                const description = descInput.value.trim();
+                const isNewArrival = newArrivalCheck.checked;
+                const isBestSelling = bestSellingCheck.checked;
+
+                if (!name || isNaN(price) || price < 0 || !image) {
+                    showToast('Please fill in all required fields.', 'fa-triangle-exclamation');
+                    return;
+                }
+
+                const editId = editIdInput.value;
+                if (editId) {
+                    const idx = products.findIndex(p => p.id === editId);
+                    if (idx !== -1) {
+                        const updatedProduct = {
+                            ...products[idx],
+                            name,
+                            price,
+                            category: category || 'Uncategorized',
+                            image,
+                            description: description || 'A refined piece for any occasion.',
+                            isNewArrival,
+                            isBestSelling
+                        };
+                        try {
+                            const firebase = await window.firebaseReady;
+                            if (updatedProduct.firebaseId) {
+                                await firebase.updateDoc(
+                                    firebase.doc(firebase.db, 'products', updatedProduct.firebaseId),
+                                    {
+                                        name,
+                                        price,
+                                        category: category || 'Uncategorized',
+                                        imageUrl: image,
+                                        image,
+                                        description: description || 'A refined piece for any occasion.',
+                                        isNew: isNewArrival,
+                                        isBest: isBestSelling,
+                                        isNewArrival,
+                                        isBestSelling,
+                                        updatedAt: firebase.serverTimestamp()
+                                    }
+                                );
+                            }
+                        } catch (error) {
+                            console.error('Firebase update failed; saved locally instead:', error);
+                        }
+                        products[idx] = updatedProduct;
+                        saveData();
+                        renderAll();
+                        showToast('✅ Product updated successfully!');
+                        closeModal();
+                    }
+                } else {
+                    const newProduct = {
+                        id: generateId(),
+                        name,
+                        price,
+                        category: category || 'Uncategorized',
+                        image,
+                        description: description || 'A refined piece for any occasion.',
+                        isNewArrival,
+                        isBestSelling
+                    };
+                    try {
+                        const firebase = await window.firebaseReady;
+                        const productRef = await firebase.addDoc(firebase.collection(firebase.db, 'products'), {
+                            name,
+                            price,
+                            category: category || 'Uncategorized',
+                            imageUrl: image,
+                            image,
+                            description: description || 'A refined piece for any occasion.',
+                            isNew: isNewArrival,
+                            isBest: isBestSelling,
+                            isNewArrival,
+                            isBestSelling,
+                            createdAt: firebase.serverTimestamp()
+                        });
+                        newProduct.firebaseId = productRef.id;
+                    } catch (error) {
+                        console.error('Firebase add failed; saved locally instead:', error);
+                    }
+                    products.unshift(newProduct);
+                    saveData();
+                    renderAll();
+                    showToast('✅ Product added successfully!');
+                    closeModal();
+                }
+            }
+
+            async function deleteProduct(id) {
+                if (!isAdmin) {
+                    pendingAdminAction = 'delete';
+                    pendingDeleteId = id;
+                    openPasswordModal('Enter admin password to delete this product');
+                    return;
+                }
+                if (!confirm('Are you sure you want to delete this piece?')) return;
+                const product = products.find(p => p.id === id);
+                if (product?.firebaseId) {
+                    try {
+                        const firebase = await window.firebaseReady;
+                        await firebase.deleteDoc(firebase.doc(firebase.db, 'products', product.firebaseId));
+                    } catch (error) {
+                        console.error('Firebase delete failed; removed locally instead:', error);
+                    }
+                }
+                products = products.filter(p => p.id !== id);
+                saveData();
+                renderAll();
+                showToast('🗑️ Product deleted.', 'fa-trash-can');
+            }
+
+            // ─── ADMIN LOCK TOGGLE ───
+            function toggleAdminLock() {
+                if (isAdmin) {
+                    isAdmin = false;
+                    renderAll();
+                    showToast('🔒 Admin mode locked', 'fa-lock');
+                } else {
+                    pendingAdminAction = null;
+                    pendingDeleteId = null;
+                    openPasswordModal('Enter admin password to unlock');
+                }
+            }
+
+            // ─── CARD CLICK → WHATSAPP ───
+            function handleCardClick(e) {
+                const card = e.target.closest('.product-card');
+                if (!card) return;
+                if (e.target.closest('button') || e.target.closest('.admin-actions')) return;
+
+                const id = card.dataset.id;
+                const product = products.find(p => p.id === id);
+                if (!product) return;
+
+                if (isAdmin) {
+                    showToast('Admin mode: click Edit to modify', 'fa-info-circle');
+                    return;
+                }
+
+                const msg =
+                    `Hello Wrist Aura! I'm interested in the *${product.name}* ($${product.price.toFixed(2)}) — ${product.description || ''}`;
+                const url = `https://wa.me/923264744529?text=${encodeURIComponent(msg)}`;
+                window.open(url, '_blank');
+            }
+
+            function startHeroSlideshow() {
+                const heroBackground = document.querySelector('.hero-background');
+                if (!heroBackground) return;
+
+                const heroImages = [
+                    'https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=1600&q=85',
+                    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=85',
+                    'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=85'
+                ];
+                let currentImage = 0;
+
+                const showNextImage = () => {
+                    heroBackground.style.backgroundImage = `url("${heroImages[currentImage]}")`;
+                    heroBackground.classList.add('visible');
+                    currentImage = (currentImage + 1) % heroImages.length;
+                };
+
+                showNextImage();
+                window.setInterval(showNextImage, 6000);
+            }
+
+            // ─── EVENT BINDING ───
+            function init() {
+                loadData();
+
+                // Restore admin session
+                const storedAdmin = sessionStorage.getItem('WristAura_admin');
+                if (storedAdmin === 'true') isAdmin = true;
+
+                // NAV LINKS
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        navigateTo(link.dataset.page);
+                    });
+                });
+
+                // SEARCH
+                searchInput.addEventListener('input', (e) => {
+                    applySearch(e.target.value);
+                });
+                searchClear.addEventListener('click', clearSearch);
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') clearSearch();
+                });
+
+                // ADMIN LOCK
+                adminLockBtn.addEventListener('click', toggleAdminLock);
+
+                // ADD BUTTON
+                openAddBtn.addEventListener('click', openAdd);
+
+                // PRODUCT MODAL
+                closeModalBtn.addEventListener('click', closeModal);
+                cancelBtn.addEventListener('click', closeModal);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+                form.addEventListener('submit', saveProduct);
+
+                // PASSWORD MODAL
+                passCancelBtn.addEventListener('click', closePasswordModal);
+                passModal.addEventListener('click', (e) => {
+                    if (e.target === passModal) closePasswordModal();
+                });
+                passSubmitBtn.addEventListener('click', handlePasswordSubmit);
+                passInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handlePasswordSubmit();
+                    }
+                    if (e.key === 'Escape') closePasswordModal();
+                });
+                togglePassVis.addEventListener('click', () => {
+                    passVisible = !passVisible;
+                    passInput.type = passVisible ? 'text' : 'password';
+                    passEyeIcon.className = passVisible ? 'fas fa-eye-slash' : 'fas fa-eye';
+                });
+
+                // CARD CLICK DELEGATION
+                document.addEventListener('click', handleCardClick);
+
+                shopCategories.forEach(categoryButton => {
+                    categoryButton.addEventListener('click', () => {
+                        selectedShopCategory = categoryButton.dataset.category;
+                        shopCategories.forEach(button => {
+                            const isActive = button === categoryButton;
+                            button.classList.toggle('active', isActive);
+                            button.setAttribute('aria-selected', String(isActive));
+                        });
+                        if (currentPage !== 'shop') navigateTo('shop');
+                        else renderCurrentPage();
+                    });
+                });
+
+                // EDIT/DELETE buttons (delegated)
+                document.addEventListener('click', (e) => {
+                    const editBtn = e.target.closest('.edit-btn');
+                    if (editBtn) {
+                        e.stopPropagation();
+                        const id = editBtn.dataset.id;
+                        if (isAdmin) openEdit(id);
+                        else {
+                            pendingAdminAction = 'edit';
+                            pendingDeleteId = id;
+                            openPasswordModal('Enter admin password to edit');
+                        }
+                        return;
+                    }
+                    const delBtn = e.target.closest('.delete-btn');
+                    if (delBtn) {
+                        e.stopPropagation();
+                        const id = delBtn.dataset.id;
+                        if (isAdmin) deleteProduct(id);
+                        else {
+                            pendingAdminAction = 'delete';
+                            pendingDeleteId = id;
+                            openPasswordModal('Enter admin password to delete');
+                        }
+                    }
+                });
+
+                // KEYBOARD SHORTCUTS
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                        closePasswordModal();
+                    }
+                    if (e.key === 'a' && (e.ctrlKey || e.metaKey) && isAdmin) {
+                        e.preventDefault();
+                        openAdd();
+                    }
+                    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.target.closest('input, textarea, select')) {
+                        e.preventDefault();
+                        searchInput.focus();
+                    }
+                });
+
+                // Expose
+                window.openAdd = openAdd;
+                window.openEdit = openEdit;
+                window.deleteProduct = deleteProduct;
+                window.navigateTo = navigateTo;
+
+                // Save admin state
+                const origRender = renderAll;
+                renderAll = function () {
+                    origRender();
+                    sessionStorage.setItem('WristAura_admin', isAdmin ? 'true' : 'false');
+                };
+
+                // Initial render
+                renderAll();
+
+                // Ensure home is active
+                navigateTo('home');
+                startHeroSlideshow();
+
+                console.log('✨ Wrist Aura loaded — Admin password: "' + ADMIN_PASSWORD + '"');
+                console.log('🔍 Press "/" to focus search');
+                console.log('⌨️ Ctrl+A to add product (admin mode)');
+            }
+
+            // ─── RUN ───
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+
+</body>
+
+</html>
