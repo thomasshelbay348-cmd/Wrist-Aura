@@ -934,6 +934,44 @@
         }
 
         @media (max-width: 640px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            nav.nav-glow {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) auto;
+                row-gap: 8px;
+                padding-top: 8px;
+                padding-bottom: 8px;
+            }
+
+            nav.nav-glow>div:first-child {
+                min-width: 0;
+            }
+
+            nav.nav-glow>div:nth-child(2) {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                justify-content: space-between;
+                gap: 10px;
+                width: 100%;
+                padding: 2px 4px 0;
+            }
+
+            nav.nav-glow>div:nth-child(3) {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            nav.nav-glow .nav-link {
+                font-size: 0.58rem;
+            }
+
+            main {
+                padding-top: 8.5rem !important;
+            }
+
             .whatsapp-btn {
                 width: 52px;
                 height: 52px;
@@ -955,6 +993,58 @@
 
             .product-card .wa-hint {
                 display: none;
+            }
+
+            .page-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .shop-categories {
+                gap: 6px;
+                margin-top: 14px;
+            }
+
+            .shop-category {
+                flex: 1 1 calc(50% - 6px);
+                padding: 8px 10px;
+                font-size: 0.65rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr !important;
+                gap: 26px !important;
+            }
+
+            .footer-brand {
+                max-width: none;
+            }
+
+            .footer-bottom {
+                align-items: flex-start;
+                flex-direction: column !important;
+                gap: 12px !important;
+            }
+
+            .toast {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                justify-content: center;
+                padding: 11px 14px;
+                text-align: center;
+            }
+
+            .modal-overlay {
+                padding: 12px;
+            }
+
+            .modal-box {
+                border-radius: 20px;
+                padding: 24px 18px 20px;
+            }
+
+            .admin-actions {
+                flex-wrap: wrap;
             }
         }
 
@@ -1008,6 +1098,7 @@
             collection,
             deleteDoc,
             doc,
+            getDocs,
             getFirestore,
             serverTimestamp,
             updateDoc
@@ -1033,6 +1124,7 @@
             collection,
             deleteDoc,
             doc,
+            getDocs,
             serverTimestamp,
             updateDoc
         });
@@ -1320,7 +1412,7 @@
 
             // ─── CONFIG ───
             const ADMIN_PASSWORD = 'wristaura@2026'; // Change this to your desired password
-            const STORAGE_KEY = 'wristaura_products';
+            const STORAGE_KEY = 'wrist_products';
 
             // ─── STATE ───
             let products = [];
@@ -1449,24 +1541,63 @@
                 return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
             }
 
-            function loadData() {
-                const stored = localStorage.getItem('wrist_products');
+            async function loadData() {
+                let localProducts = [];
+                const stored = localStorage.getItem(STORAGE_KEY);
                 if (stored) {
                     try {
                         const parsed = JSON.parse(stored);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            // Ensure flags exist
-                            products = parsed.map(p => ({
-                                ...p,
-                                isNewArrival: p.isNewArrival || false,
-                                isBestSelling: p.isBestSelling || false
-                            }));
-                            return;
-                        }
-                    } catch { /* fall through */ }
+                        if (Array.isArray(parsed)) localProducts = parsed;
+                    } catch { /* use defaults */ }
                 }
-                products = defaultProducts.map(p => ({ ...p }));
-                saveData();
+
+                try {
+                    const firebase = await window.firebaseReady;
+                    const snapshot = await firebase.getDocs(firebase.collection(firebase.db, 'products'));
+                    if (!snapshot.empty) {
+                        products = snapshot.docs.map(item => {
+                            const data = item.data();
+                            return {
+                                ...data,
+                                id: data.id || item.id,
+                                firebaseId: item.id,
+                                isNewArrival: data.isNewArrival ?? data.isNew ?? false,
+                                isBestSelling: data.isBestSelling ?? data.isBest ?? false
+                            };
+                        });
+                        saveData();
+                        return;
+                    }
+
+                    products = localProducts.length > 0
+                        ? localProducts.map(p => ({ ...p }))
+                        : defaultProducts.map(p => ({ ...p }));
+
+                    for (const product of products) {
+                        const productRef = await firebase.addDoc(firebase.collection(firebase.db, 'products'), {
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            category: product.category,
+                            image: product.image,
+                            imageUrl: product.image,
+                            description: product.description,
+                            isNewArrival: product.isNewArrival ?? false,
+                            isBestSelling: product.isBestSelling ?? false,
+                            isNew: product.isNewArrival ?? false,
+                            isBest: product.isBestSelling ?? false,
+                            createdAt: firebase.serverTimestamp()
+                        });
+                        product.firebaseId = productRef.id;
+                    }
+                    saveData();
+                } catch (error) {
+                    console.error('Firebase load failed; using local catalog:', error);
+                    products = localProducts.length > 0
+                        ? localProducts.map(p => ({ ...p }))
+                        : defaultProducts.map(p => ({ ...p }));
+                    saveData();
+                }
             }
 
             function saveData() {
@@ -1957,8 +2088,8 @@
             }
 
             // ─── EVENT BINDING ───
-            function init() {
-                loadData();
+            async function init() {
+                await loadData();
 
                 // Restore admin session
                 const storedAdmin = sessionStorage.getItem('WristAura_admin');
