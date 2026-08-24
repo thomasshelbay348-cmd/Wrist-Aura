@@ -1092,7 +1092,12 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
         import {
             addDoc,
             collection,
@@ -1100,6 +1105,7 @@
             doc,
             getDocs,
             getFirestore,
+            onSnapshot,
             serverTimestamp,
             updateDoc
         } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -1115,20 +1121,26 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        getAnalytics(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         window.firebaseReady = Promise.resolve({
+            app,
+            auth,
             db,
             addDoc,
             collection,
             deleteDoc,
             doc,
             getDocs,
+            onAuthStateChanged,
+            onSnapshot,
             serverTimestamp,
+            signInWithEmailAndPassword,
+            signOut,
             updateDoc
         });
-    </script>https://bjarchitectspk.vercel.app/
+    </script>
 </head>
 
 <body>
@@ -1146,7 +1158,7 @@
             <img src="./logo.jpeg" alt="Wrist Aura" class="w-10 h-10 rounded-full object-cover border border-gold/20" />
             <span class="text-xl md:text-2xl font-display gold-gradient-text font-bold tracking-tight">WRIST</span>
             <span
-                class="text-[0.5rem] font-light tracking-[0.3em] text-gold-400/60 uppercase hidden sm:inline">AURA</span>
+                class="text-[1rem] sm:text-[1.25rem] font-light tracking-[0.2em] sm:tracking-[0.3em] text-gold-400/60 uppercase">AURA</span>
         </div>
 
         <!-- Page Nav Links -->
@@ -1182,7 +1194,7 @@
                 <div class="hero-content">
                     <div class="text-gold text-xs font-semibold uppercase tracking-[0.2em] mb-1">✦ Luxury & Trendy
                         Handmade Jewelry</div>
-                    <h1 class="hero-title gold-gradient-text">Timeless <br class="sm:hidden" /><br> Elegance & Statement
+                    <h1 class="hero-title gold-gradient-text">Timeless <br class="sm:hidden" />Elegance & Statement
                         Jewelry</h1>
                     <p class="hero-sub">Discover Wrist Aura's exclusive curated jewelry collection featuring handcrafted
                         bracelets, necklaces, earrings,
@@ -1334,7 +1346,7 @@
                             placeholder="e.g. Golden Serpent Bracelet" required />
                     </div>
                     <div>
-                        <label for="productPrice">Price ($)</label>
+                        <label for="productPrice">Price (PKR)</label>
                         <input id="productPrice" type="number" step="0.01" class="input-gold" placeholder="149.00"
                             required />
                     </div>
@@ -1411,12 +1423,14 @@
             'use strict';
 
             // ─── CONFIG ───
-            const ADMIN_PASSWORD = 'wristaura@2026'; // Change this to your desired password
+            const ADMIN_EMAIL = 'wristaura36@gmail.com';
             const STORAGE_KEY = 'wrist_products';
 
             // ─── STATE ───
             let products = [];
             let isAdmin = false;
+            let currentUser = null;
+            let catalogNeedsSeed = false;
             let editingId = null;
             let currentPage = 'home';
             let searchQuery = '';
@@ -1475,6 +1489,24 @@
             const toastMsg = document.getElementById('toastMessage');
             let toastTimer = null;
             let passVisible = false;
+
+            function formatPrice(price) {
+                const numericPrice = Number(price);
+                return `PKR ${(Number.isFinite(numericPrice) ? numericPrice : 0).toLocaleString('en-PK', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>'"]/g, character => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[character]));
+            }
 
             // ─── NAV LINKS ───
             const navLinks = document.querySelectorAll('.nav-link');
@@ -1541,67 +1573,131 @@
                 return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
             }
 
-            async function loadData() {
-                let localProducts = [];
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    try {
-                        const parsed = JSON.parse(stored);
-                        if (Array.isArray(parsed)) localProducts = parsed;
-                    } catch { /* use defaults */ }
-                }
+            let productsListenerUnsubscribe = null;
 
+            function normalizeProduct(data, firebaseId) {
+                return {
+                    ...data,
+                    id: data.id || firebaseId,
+                    firebaseId,
+                    name: String(data.name || 'Untitled piece'),
+                    price: Number(data.price) || 0,
+                    category: String(data.category || 'Uncategorized'),
+                    image: data.image || data.imageUrl || '',
+                    description: String(data.description || 'A refined piece for any occasion.'),
+                    isNewArrival: Boolean(data.isNewArrival ?? data.isNew ?? false),
+                    isBestSelling: Boolean(data.isBestSelling ?? data.isBest ?? false)
+                };
+            }
+
+            function productDocument(product, firebase) {
+                return {
+                    id: product.id,
+                    name: product.name,
+                    price: Number(product.price) || 0,
+                    category: product.category || 'Uncategorized',
+                    image: product.image || '',
+                    imageUrl: product.image || '',
+                    description: product.description || 'A refined piece for any occasion.',
+                    isNewArrival: Boolean(product.isNewArrival),
+                    isBestSelling: Boolean(product.isBestSelling),
+                    // Keep legacy field names so older documents remain compatible.
+                    isNew: Boolean(product.isNewArrival),
+                    isBest: Boolean(product.isBestSelling),
+                    ...(firebase ? { updatedAt: firebase.serverTimestamp() } : {})
+                };
+            }
+
+            function readLocalProducts() {
                 try {
-                    const firebase = await window.firebaseReady;
-                    const snapshot = await firebase.getDocs(firebase.collection(firebase.db, 'products'));
-                    if (!snapshot.empty) {
-                        products = snapshot.docs.map(item => {
-                            const data = item.data();
-                            return {
-                                ...data,
-                                id: data.id || item.id,
-                                firebaseId: item.id,
-                                isNewArrival: data.isNewArrival ?? data.isNew ?? false,
-                                isBestSelling: data.isBestSelling ?? data.isBest ?? false
-                            };
-                        });
-                        saveData();
-                        return;
-                    }
-
-                    products = localProducts.length > 0
-                        ? localProducts.map(p => ({ ...p }))
-                        : defaultProducts.map(p => ({ ...p }));
-
-                    for (const product of products) {
-                        const productRef = await firebase.addDoc(firebase.collection(firebase.db, 'products'), {
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            category: product.category,
-                            image: product.image,
-                            imageUrl: product.image,
-                            description: product.description,
-                            isNewArrival: product.isNewArrival ?? false,
-                            isBestSelling: product.isBestSelling ?? false,
-                            isNew: product.isNewArrival ?? false,
-                            isBest: product.isBestSelling ?? false,
-                            createdAt: firebase.serverTimestamp()
-                        });
-                        product.firebaseId = productRef.id;
-                    }
-                    saveData();
-                } catch (error) {
-                    console.error('Firebase load failed; using local catalog:', error);
-                    products = localProducts.length > 0
-                        ? localProducts.map(p => ({ ...p }))
-                        : defaultProducts.map(p => ({ ...p }));
-                    saveData();
+                    const stored = localStorage.getItem(STORAGE_KEY);
+                    const parsed = stored ? JSON.parse(stored) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
                 }
             }
 
+            async function listenForProductChanges(firebase) {
+                if (productsListenerUnsubscribe) productsListenerUnsubscribe();
+
+                productsListenerUnsubscribe = firebase.onSnapshot(
+                    firebase.collection(firebase.db, 'products'),
+                    snapshot => {
+                        if (snapshot.empty && catalogNeedsSeed) {
+                            // Preserve the local/default preview until the admin seeds Firestore.
+                            saveData();
+                            renderAll();
+                            return;
+                        }
+                        products = snapshot.docs
+                            .map(item => normalizeProduct(item.data(), item.id))
+                            .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+                        saveData();
+                        renderAll();
+                    },
+                    error => {
+                        console.error('Firestore realtime listener failed:', error);
+                        showToast('Live sync unavailable; retrying on reload.', 'fa-triangle-exclamation');
+                    }
+                );
+            }
+
+            async function loadData() {
+                const localProducts = readLocalProducts();
+                let firebase = null;
+
+                try {
+                    firebase = await window.firebaseReady;
+                    const productCollection = firebase.collection(firebase.db, 'products');
+                    const snapshot = await firebase.getDocs(productCollection);
+
+                    if (!snapshot.empty) {
+                        products = snapshot.docs.map(item => normalizeProduct(item.data(), item.id));
+                    } else {
+                        // Keep a local preview until the admin authenticates and seeds the cloud catalog.
+                        products = (localProducts.length > 0 ? localProducts : defaultProducts)
+                            .map(product => ({ ...product }));
+                        catalogNeedsSeed = true;
+                    }
+
+                    saveData();
+                    await listenForProductChanges(firebase);
+                } catch (error) {
+                    console.error('Firebase load failed; using local catalog:', error);
+                    products = (localProducts.length > 0 ? localProducts : defaultProducts)
+                        .map(product => ({ ...product }));
+                    catalogNeedsSeed = true;
+                    saveData();
+                    if (firebase) await listenForProductChanges(firebase);
+                    showToast('Offline mode: Firebase could not be reached.', 'fa-wifi');
+                }
+            }
+
+            async function seedCatalogIfNeeded(firebase) {
+                if (!catalogNeedsSeed || !currentUser) return;
+
+                const productCollection = firebase.collection(firebase.db, 'products');
+                const latestSnapshot = await firebase.getDocs(productCollection);
+                if (!latestSnapshot.empty) {
+                    catalogNeedsSeed = false;
+                    return;
+                }
+
+                const seededProducts = await Promise.all(products.map(async product => {
+                    const productRef = await firebase.addDoc(productCollection, {
+                        ...productDocument(product),
+                        createdAt: firebase.serverTimestamp()
+                    });
+                    return { ...product, firebaseId: productRef.id };
+                }));
+                products = seededProducts;
+                catalogNeedsSeed = false;
+                saveData();
+            }
+
             function saveData() {
-                localStorage.setItem('wrist_products', JSON.stringify(products));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             }
 
             function showToast(msg, icon = 'fa-circle-check') {
@@ -1657,9 +1753,9 @@
                 // Apply search
                 if (searchQuery) {
                     filtered = filtered.filter(p =>
-                        p.name.toLowerCase().includes(searchQuery) ||
-                        p.category.toLowerCase().includes(searchQuery) ||
-                        (p.description && p.description.toLowerCase().includes(searchQuery))
+                        String(p.name || '').toLowerCase().includes(searchQuery) ||
+                        String(p.category || '').toLowerCase().includes(searchQuery) ||
+                        String(p.description || '').toLowerCase().includes(searchQuery)
                     );
                 }
                 // Page filter
@@ -1722,12 +1818,12 @@
 
                 return productList.map(p => `
               <div class="product-card ${isAdmin ? 'admin-mode' : ''} animate-in" 
-                   data-id="${p.id}"
+                   data-id="${escapeHtml(p.id)}"
                    style="animation-delay: ${Math.random() * 0.1}s">
                 <div class="img-wrap">
-                  <img src="${p.image}" alt="${p.name}" loading="lazy" 
+                  <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy" 
                        onerror="this.src='https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=600&h=600&fit=crop&crop=center&auto=format'" />
-                  <span class="badge-gold">${p.category || 'Accessory'}</span>
+                  <span class="badge-gold">${escapeHtml(p.category || 'Accessory')}</span>
                   ${p.isBestSelling ? '<span class="badge-flag badge-best">⭐ Best</span>' : ''}
                   ${p.isNewArrival ? '<span class="badge-flag badge-new">✦ New</span>' : ''}
                   ${isAdmin ? '<span class="admin-badge"><i class="fas fa-lock-open"></i> Admin</span>' : ''}
@@ -1735,15 +1831,15 @@
                 </div>
                 <div class="card-content">
                   <div class="flex items-start justify-between gap-2">
-                    <h3 class="font-display text-base font-semibold text-white leading-tight">${p.name}</h3>
-                    <span class="text-gold font-bold text-sm whitespace-nowrap">$${p.price.toFixed(2)}</span>
+                    <h3 class="font-display text-base font-semibold text-white leading-tight">${escapeHtml(p.name)}</h3>
+                    <span class="text-gold font-bold text-sm whitespace-nowrap">${formatPrice(p.price)}</span>
                   </div>
-                  <p class="text-white/30 text-xs mt-1 line-clamp-2">${p.description || 'A refined piece for any occasion.'}</p>
+                  <p class="text-white/30 text-xs mt-1 line-clamp-2">${escapeHtml(p.description || 'A refined piece for any occasion.')}</p>
                   <div class="admin-actions">
-                    <button class="btn-ghost-gold text-xs flex items-center gap-1 edit-btn" data-id="${p.id}">
+                    <button class="btn-ghost-gold text-xs flex items-center gap-1 edit-btn" data-id="${escapeHtml(p.id)}">
                       <i class="fas fa-pen"></i> Edit
                     </button>
-                    <button class="btn-danger-ghost text-xs flex items-center gap-1 delete-btn" data-id="${p.id}">
+                    <button class="btn-danger-ghost text-xs flex items-center gap-1 delete-btn" data-id="${escapeHtml(p.id)}">
                       <i class="fas fa-trash-can"></i> Delete
                     </button>
                   </div>
@@ -1771,22 +1867,22 @@
                 adminList.innerHTML = products.map(p => `
               <div class="flex flex-wrap items-center gap-3 p-2.5 rounded-xl bg-card border border-gold/10 hover:border-gold/20 transition">
                 <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[#12100e]">
-                  <img src="${p.image}" alt="" class="w-full h-full object-cover" 
+                  <img src="${escapeHtml(p.image)}" alt="" class="w-full h-full object-cover" 
                        onerror="this.src='https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?w=80&h=80&fit=crop&crop=center&auto=format'" />
                 </div>
                 <div class="flex-1 min-w-[100px]">
-                  <p class="text-sm font-medium text-white">${p.name}</p>
-                  <p class="text-xs text-white/30">$${p.price.toFixed(2)} · ${p.category || 'Uncategorized'}</p>
+                  <p class="text-sm font-medium text-white">${escapeHtml(p.name)}</p>
+                  <p class="text-xs text-white/30">${formatPrice(p.price)} · ${escapeHtml(p.category || 'Uncategorized')}</p>
                   <p class="text-[0.5rem] text-white/20 flex gap-3 mt-0.5">
                     ${p.isNewArrival ? '<span class="text-green-400">✦ New</span>' : ''}
                     ${p.isBestSelling ? '<span class="text-gold-400">⭐ Best</span>' : ''}
                   </p>
                 </div>
                 <div class="flex gap-1.5 flex-wrap">
-                  <button class="btn-ghost-gold text-[0.6rem] flex items-center gap-1 edit-admin-btn" data-id="${p.id}">
+                  <button class="btn-ghost-gold text-[0.6rem] flex items-center gap-1 edit-admin-btn" data-id="${escapeHtml(p.id)}">
                     <i class="fas fa-pen"></i> Edit
                   </button>
-                  <button class="btn-danger-ghost text-[0.6rem] flex items-center gap-1 delete-admin-btn" data-id="${p.id}">
+                  <button class="btn-danger-ghost text-[0.6rem] flex items-center gap-1 delete-admin-btn" data-id="${escapeHtml(p.id)}">
                     <i class="fas fa-trash-can"></i> Delete
                   </button>
                 </div>
@@ -1833,36 +1929,46 @@
                 pendingDeleteId = null;
             }
 
-            function handlePasswordSubmit() {
+            async function handlePasswordSubmit() {
                 const entered = passInput.value.trim();
-                if (entered === ADMIN_PASSWORD) {
-                    isAdmin = true;
+                if (!entered) {
+                    passError.textContent = 'Please enter your password.';
+                    return;
+                }
+
+                passSubmitBtn.disabled = true;
+                try {
+                    const firebase = await window.firebaseReady;
+                    const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, ADMIN_EMAIL, entered);
+
+                    // Capture the requested action before closePasswordModal clears it.
+                    const action = pendingAdminAction;
+                    const actionId = pendingDeleteId;
+                    currentUser = userCredential.user;
+                    isAdmin = currentUser?.email === ADMIN_EMAIL;
                     closePasswordModal();
-                    renderAll();
-                    showToast('🔓 Admin mode activated', 'fa-lock-open');
-                    if (pendingAdminAction === 'add') {
-                        pendingAdminAction = null;
-                        openAdd();
-                    } else if (pendingAdminAction === 'edit' && pendingDeleteId) {
-                        const id = pendingDeleteId;
-                        pendingAdminAction = null;
-                        pendingDeleteId = null;
-                        openEdit(id);
-                    } else if (pendingAdminAction === 'delete' && pendingDeleteId) {
-                        const id = pendingDeleteId;
-                        pendingAdminAction = null;
-                        pendingDeleteId = null;
-                        deleteProduct(id);
-                    } else {
-                        pendingAdminAction = null;
-                        pendingDeleteId = null;
+
+                    if (isAdmin) {
+                        await seedCatalogIfNeeded(firebase);
+                        renderAll();
+                        showToast('Admin mode activated', 'fa-lock-open');
+                        if (action === 'add') {
+                            openAdd();
+                        } else if (action === 'edit' && actionId) {
+                            openEdit(actionId);
+                        } else if (action === 'delete' && actionId) {
+                            await deleteProduct(actionId);
+                        }
                     }
-                } else {
-                    passError.textContent = '❌ Incorrect password. Try again.';
+                } catch (error) {
+                    console.error('Admin sign-in failed:', error);
+                    passError.textContent = 'Incorrect password or admin account is not configured.';
                     passInput.value = '';
                     passInput.focus();
                     passInput.style.borderColor = '#ef4444';
                     setTimeout(() => { passInput.style.borderColor = ''; }, 500);
+                } finally {
+                    passSubmitBtn.disabled = false;
                 }
             }
 
@@ -1944,32 +2050,22 @@
                         };
                         try {
                             const firebase = await window.firebaseReady;
-                            if (updatedProduct.firebaseId) {
-                                await firebase.updateDoc(
-                                    firebase.doc(firebase.db, 'products', updatedProduct.firebaseId),
-                                    {
-                                        name,
-                                        price,
-                                        category: category || 'Uncategorized',
-                                        imageUrl: image,
-                                        image,
-                                        description: description || 'A refined piece for any occasion.',
-                                        isNew: isNewArrival,
-                                        isBest: isBestSelling,
-                                        isNewArrival,
-                                        isBestSelling,
-                                        updatedAt: firebase.serverTimestamp()
-                                    }
-                                );
+                            if (!updatedProduct.firebaseId) {
+                                throw new Error('This product is not linked to a Firestore document.');
                             }
+                            await firebase.updateDoc(
+                                firebase.doc(firebase.db, 'products', updatedProduct.firebaseId),
+                                productDocument(updatedProduct, firebase)
+                            );
+                            products[idx] = updatedProduct;
+                            saveData();
+                            renderAll();
+                            showToast('Product updated successfully!');
+                            closeModal();
                         } catch (error) {
-                            console.error('Firebase update failed; saved locally instead:', error);
+                            console.error('Firebase update failed:', error);
+                            showToast('Update failed. Please check Firebase and try again.', 'fa-triangle-exclamation');
                         }
-                        products[idx] = updatedProduct;
-                        saveData();
-                        renderAll();
-                        showToast('✅ Product updated successfully!');
-                        closeModal();
                     }
                 } else {
                     const newProduct = {
@@ -1984,28 +2080,23 @@
                     };
                     try {
                         const firebase = await window.firebaseReady;
-                        const productRef = await firebase.addDoc(firebase.collection(firebase.db, 'products'), {
-                            name,
-                            price,
-                            category: category || 'Uncategorized',
-                            imageUrl: image,
-                            image,
-                            description: description || 'A refined piece for any occasion.',
-                            isNew: isNewArrival,
-                            isBest: isBestSelling,
-                            isNewArrival,
-                            isBestSelling,
-                            createdAt: firebase.serverTimestamp()
-                        });
+                        const productRef = await firebase.addDoc(
+                            firebase.collection(firebase.db, 'products'),
+                            {
+                                ...productDocument(newProduct),
+                                createdAt: firebase.serverTimestamp()
+                            }
+                        );
                         newProduct.firebaseId = productRef.id;
+                        products.unshift(newProduct);
+                        saveData();
+                        renderAll();
+                        showToast('Product added successfully!');
+                        closeModal();
                     } catch (error) {
-                        console.error('Firebase add failed; saved locally instead:', error);
+                        console.error('Firebase add failed:', error);
+                        showToast('Product was not added. Please check Firebase and try again.', 'fa-triangle-exclamation');
                     }
-                    products.unshift(newProduct);
-                    saveData();
-                    renderAll();
-                    showToast('✅ Product added successfully!');
-                    closeModal();
                 }
             }
 
@@ -2018,26 +2109,33 @@
                 }
                 if (!confirm('Are you sure you want to delete this piece?')) return;
                 const product = products.find(p => p.id === id);
-                if (product?.firebaseId) {
-                    try {
-                        const firebase = await window.firebaseReady;
-                        await firebase.deleteDoc(firebase.doc(firebase.db, 'products', product.firebaseId));
-                    } catch (error) {
-                        console.error('Firebase delete failed; removed locally instead:', error);
+                try {
+                    const firebase = await window.firebaseReady;
+                    if (!product?.firebaseId) {
+                        throw new Error('This product is not linked to a Firestore document.');
                     }
+                    await firebase.deleteDoc(firebase.doc(firebase.db, 'products', product.firebaseId));
+                    products = products.filter(p => p.id !== id);
+                    saveData();
+                    renderAll();
+                    showToast('Product deleted.', 'fa-trash-can');
+                } catch (error) {
+                    console.error('Firebase delete failed:', error);
+                    showToast('Delete failed. Please check Firebase and try again.', 'fa-triangle-exclamation');
                 }
-                products = products.filter(p => p.id !== id);
-                saveData();
-                renderAll();
-                showToast('🗑️ Product deleted.', 'fa-trash-can');
             }
 
             // ─── ADMIN LOCK TOGGLE ───
-            function toggleAdminLock() {
+            async function toggleAdminLock() {
                 if (isAdmin) {
-                    isAdmin = false;
-                    renderAll();
-                    showToast('🔒 Admin mode locked', 'fa-lock');
+                    try {
+                        const firebase = await window.firebaseReady;
+                        await firebase.signOut(firebase.auth);
+                        showToast('Admin mode locked', 'fa-lock');
+                    } catch (error) {
+                        console.error('Admin sign-out failed:', error);
+                        showToast('Could not lock admin mode.', 'fa-triangle-exclamation');
+                    }
                 } else {
                     pendingAdminAction = null;
                     pendingDeleteId = null;
@@ -2061,7 +2159,7 @@
                 }
 
                 const msg =
-                    `Hello Wrist Aura! I'm interested in the *${product.name}* ($${product.price.toFixed(2)}) — ${product.description || ''}`;
+                    `Hello Wrist Aura! I'm interested in the *${product.name}* (${formatPrice(product.price)}) — ${product.description || ''}`;
                 const url = `https://wa.me/923264744529?text=${encodeURIComponent(msg)}`;
                 window.open(url, '_blank');
             }
@@ -2091,9 +2189,20 @@
             async function init() {
                 await loadData();
 
-                // Restore admin session
-                const storedAdmin = sessionStorage.getItem('WristAura_admin');
-                if (storedAdmin === 'true') isAdmin = true;
+                const firebase = await window.firebaseReady;
+                firebase.onAuthStateChanged(firebase.auth, async user => {
+                    currentUser = user;
+                    isAdmin = Boolean(user && user.email === ADMIN_EMAIL);
+                    if (isAdmin && catalogNeedsSeed) {
+                        try {
+                            await seedCatalogIfNeeded(firebase);
+                        } catch (error) {
+                            console.error('Initial catalog migration failed:', error);
+                            showToast('Could not migrate the catalog to Firebase.', 'fa-triangle-exclamation');
+                        }
+                    }
+                    renderAll();
+                });
 
                 // NAV LINKS
                 navLinks.forEach(link => {
@@ -2209,13 +2318,6 @@
                 window.deleteProduct = deleteProduct;
                 window.navigateTo = navigateTo;
 
-                // Save admin state
-                const origRender = renderAll;
-                renderAll = function () {
-                    origRender();
-                    sessionStorage.setItem('WristAura_admin', isAdmin ? 'true' : 'false');
-                };
-
                 // Initial render
                 renderAll();
 
@@ -2223,9 +2325,9 @@
                 navigateTo('home');
                 startHeroSlideshow();
 
-                console.log('✨ Wrist Aura loaded — Admin password: "' + ADMIN_PASSWORD + '"');
-                console.log('🔍 Press "/" to focus search');
-                console.log('⌨️ Ctrl+A to add product (admin mode)');
+                console.log('Wrist Aura loaded — Firebase catalog sync enabled');
+                console.log('Press "/" to focus search');
+                console.log('Ctrl+A to add product after admin sign-in');
             }
 
             // ─── RUN ───
